@@ -1,3 +1,5 @@
+// This is the entry of the whole project, containing VGA initialization and calling to the CardGameNeo
+
 module ProjectNeo
 	(
 		CLOCK_50,						//	On Board 50 MHz
@@ -72,8 +74,7 @@ module ProjectNeo
 		defparam VGA.BITS_PER_COLOUR_CHANNEL = 3;
 		defparam VGA.BACKGROUND_IMAGE = "black.mif";
 			
-	// Put your code here. Your code should produce signals x,y,colour and writeEn
+	// Put your code here. Your code should produce signals x, y, colour and writeEn
 	// for the VGA controller, in addition to any other functionality your design may require.
-	
 	CardGameNeo game(CLOCK_50, KEY[0], ~KEY[1], ~KEY[1], SW[0], ~KEY[1], SW[1:0], SW[1], ~KEY[1], x, y, colour, HEX0, HEX1, HEX2, HEX3, HEX4, HEX5, SW[5:2], LEDR[9:0]);
 endmodule

@@ -1,3 +1,6 @@
+// This file contains all the picture printing modules to VGA
+// The idea is: all the colours are calculated, and use a big mux to choose which colour to send back to display datapath
+
 module background(Clock, ResetN, startPrintBackground, X, Y, Colourout,finish);
 	input Clock, ResetN, startPrintBackground;
 	output [8:0] Colourout;

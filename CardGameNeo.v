@@ -1,3 +1,6 @@
+// This is the main part of the card game, see figure 2.2 for structure
+
+// Overall module, using wires to connect between modules
 module CardGameNeo(Clock, ResetN, go, load_bet, guess, load_input, bet_sw, continue, cont_key, Xout, Yout, Colourout, HEX0, HEX1, HEX2, HEX3, HEX4, HEX5, fixedNum, LEDR[9:0]);
 	input Clock, ResetN, go, guess, load_bet, load_input, continue,cont_key;
 	input [3:0] fixedNum;
@@ -67,6 +70,7 @@ module CardGameNeo(Clock, ResetN, go, load_bet, guess, load_input, bet_sw, conti
 	
 	//assign LEDR[2] = trueResult;
 	//assign LEDR[1] = highlowlabel_fin;//userGuess;
+	// Use LED to show what state the program is currently in, useful skill for debugging
 	assign LEDR[9:5] = current_state;
 	assign LEDR[4:1] = current_state_main;
 	//assign LEDR[1] = gen;
@@ -74,6 +78,8 @@ module CardGameNeo(Clock, ResetN, go, load_bet, guess, load_input, bet_sw, conti
 	assign LEDR[0] = stage_inside;
 endmodule
 
+
+// High level FSM for the game procedure
 module MainControl(input Clock, ResetN,
 					input go, load_input, continue, //from neo
 					input result, //from logic dp
@@ -148,6 +154,8 @@ module MainControl(input Clock, ResetN,
 	end
 endmodule
 
+
+// Low level FSM for going through all the states, and for each state set all enable signals
 module SignalControl(input Clock, ResetN, load_bet, load_input, result, cont_key,
 					input ch_bet, gen, loadstart, compare, regen, cal_chip, //from maincontrol
 					input print_background_fin, chip_select_fin, dp_left_fin, dp_right_fin, dp_highlow_label_fin, dp_highlow_button_fin, dp_compare_fin, animation_fin, continue_fin, //from display dp
@@ -363,6 +371,8 @@ module SignalControl(input Clock, ResetN, load_bet, load_input, result, cont_key
 	end
 endmodule
 
+
+// Module for all logical judgements, e.g. calculating chips, getting card number, doing comparison
 module LogicDatapath(
 			input Clock, ResetN,
 			input guess, ld_bet, ld_faceup, ld_facedown, ld_input, do_compare, bet_to_chip, //from sigControl
@@ -408,8 +418,8 @@ module LogicDatapath(
 				endcase
 			end
 			if(ld_faceup) begin
-				if(!leftCardSet && staticGetLeftValue) begin //leftCardSet is for not setting the card by random number again
-					//staticGetLeftValue is for not setting the faceup as the initial value but a value from LFSR
+				if(!leftCardSet && staticGetLeftValue) begin // leftCardSet is for not setting the card by random number again
+					// staticGetLeftValue is for not setting the faceup as the initial value but a value from LFSR
 					Faceup = RandomNum;
 					leftCardSet = 1'b1;
 				end
@@ -443,27 +453,28 @@ module LogicDatapath(
 	end
 endmodule
 
+
+// Datapath for displaying, input the current element we want to print
+// Output printing coordinate and current colour to print from modules within print.v
 module DisplayDatapath(
 	input Clock, ResetN,
 	input [1:0] bet_sw, //from main
-	input [3:0] Faceup, Facedown,//from logic dp
+	input [3:0] Faceup, Facedown, //from logic dp
 	input startPrintBackground, start_print_ch_bet, startPrintLeftCard, startPrintRightCard, startPrint_button, 
 	      flip_right_card, startPrint_label, startPrint_card_animation, startPrintContinue, startPrint_highlow_label, result,
               //form sig_contl
-	input printhigh,//from sig_contl
+	input printhigh, //from sig_contl
 	output reg [7:0] Xout,
 	output reg [6:0] Yout,
 	output reg [8:0] Colourout,
 	output print_background_fin, chip_select_fin, dp_left_fin, dp_right_fin, highlowlabel_fin, dp_highlow_fin, dp_compare_fin, animation_fin, continue_fin,stage_inside,// to main
-	output [3:0] staticCardNum, selectTest //to main for testing
+	output [3:0] staticCardNum, selectTest // to main for testing
 	);
-	
-	
 
 	wire [7:0] X_background, X_leftcard, X_rightcard, X_button, X_label, X_animation, X_chip_select, X_continue, X_highlowlabel;
 	wire [6:0] Y_background, Y_leftcard, Y_rightcard, Y_button, Y_label, Y_animation, Y_chip_select, Y_continue, Y_highlowlabel;
 	wire [8:0] Colour_background, Colour_leftcard, Colour_rightcard, Colour_button, Colour_label, Colour_animation, Colour_chip, Colour_continue, Colour_highlowlabel;
-	
+
 	background background(Clock, ResetN, startPrintBackground, X_background, Y_background, Colour_background, print_background_fin);
 	leftcard leftcard(Clock, ResetN, startPrintLeftCard, Faceup, X_leftcard, Y_leftcard, Colour_leftcard, dp_left_fin, staticCardNum, selectTest);
 	rightcard rightcard(Clock, ResetN, startPrintRightCard, flip_right_card, Facedown, X_rightcard, Y_rightcard, Colour_rightcard, dp_right_fin);
@@ -526,6 +537,7 @@ module DisplayDatapath(
 endmodule
 
 
+// Random number generator (linear-feedback shift register), for generating cards
 module FibonacciLFSR(Clock, ResetN, RandomNum);
 	input Clock, ResetN;
 	output [3:0] RandomNum;
@@ -573,6 +585,7 @@ module binary_to_dicimal(
 	end
 endmodule
 
+// Hex display module
 module hex_decoder(hex_digit, segments);
     input [3:0] hex_digit;
     output reg [6:0] segments;
